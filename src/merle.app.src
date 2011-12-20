@@ -13,6 +13,7 @@
   	     merle_watcher
             ]},
   {registered, []},
+  {mod, {merle_app, []}},
   {applications, [
                   kernel,
                   stdlib

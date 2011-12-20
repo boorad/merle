@@ -5,11 +5,12 @@
 
 
 %% @spec start(_Type, _StartArgs) -> ServerRet
-%% @doc application start callback for collecterl.
-start(_Type, StartArgs) ->
-    merle_sup:start_link(StartArgs).
+%% @doc application start callback for merle.
+start(_Type, _StartArgs) ->
+  merle_sup:start_link().
+
 
 %% @spec stop(_State) -> ServerRet
-%% @doc application stop callback for collecterl.
+%% @doc application stop callback for merle.
 stop(_State) ->
-    ok.
+  ok.

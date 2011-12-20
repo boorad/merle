@@ -1,10 +1,13 @@
 -module(merle_sup).
 
--export([start_link/2, init/1]).
+-export([start_link/0, start_link/2, init/1]).
 
 -export([start_child/1]).
 
 -behaviour(supervisor).
+
+start_link() ->
+  start_link([["localhost",22133]], 5).
 
 start_link(Instances, ConnectionsPerInstance) ->
     {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, []),
