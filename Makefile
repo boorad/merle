@@ -1,23 +1,19 @@
-LIBDIR=`erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell`
-APP_NAME="merle"
-VSN="0.3"
+ERL ?= erl
+APP := merle
 
-all: compile
+.PHONY: deps
 
-docs:
-	erl -noshell -run edoc_run application "'$(APP_NAME)'" '"."' '$(VSN)' -s init stop
+all: deps
+	@./rebar compile
 
-compile:
-	@mkdir -p ebin
-	@erl -make
+deps:
+	@./rebar get-deps
 
 clean:
-	rm -f ebin/*.beam
-	rm -f erl_crash.dump
+	@./rebar clean
 
-test: all
-	prove -v t/*.t
+distclean: clean
+	@./rebar delete-deps
 
-install: all
-	mkdir -p ${LIBDIR}/${APP_NAME}-${VSN}/ebin
-	for i in ebin/*.beam; do install $$i $(LIBDIR)/${APP_NAME}-${VSN}/$$i ; done
+docs:
+	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'

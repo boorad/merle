@@ -1,0 +1,21 @@
+%%-*- mode: erlang -*-
+{application, merle,
+ [
+  {description, "erlang memcached client"},
+  {vsn, "1"},
+  {modules, [dynamic_compile,
+             gen_server2,
+             local_pg2,
+             merle,
+             merle_app,
+             merle_cluster,
+             merle_sup,
+  	     merle_watcher
+            ]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {env, []}
+ ]}.
