@@ -10,7 +10,10 @@ start_link() ->
   start_link([["localhost",22133]], 5).
 
 start_link(Instances, ConnectionsPerInstance) ->
-    {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, []),
+    Pid = case supervisor:start_link({local, ?MODULE}, ?MODULE, []) of
+            {ok, P} -> P;
+            {error, {already_started, P}} -> P
+          end,
     merle_cluster:configure(Instances, ConnectionsPerInstance),
     {ok, Pid}.
 
