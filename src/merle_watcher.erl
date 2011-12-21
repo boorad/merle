@@ -2,9 +2,9 @@
 
 -export([start_link/1, init/1, handle_call/3, handle_info/2, handle_cast/2, terminate/2]).
 
--define(RESTART_INTERVAL, 15 * 1000). %% retry each 5 seconds. 
+-define(RESTART_INTERVAL, 5 * 1000). %% retry each 5 seconds.
 
--record(state, {mcd_pid, 
+-record(state, {mcd_pid,
                 host,
                 port}).
 
@@ -26,7 +26,7 @@ handle_info('timeout', #state{mcd_pid = undefined, host = Host, port = Port} = S
            local_pg2:join({Host, Port}, Pid),
            {noreply, State#state{mcd_pid = Pid}};
         {error, Reason} ->
-	    receive 
+	    receive
 		{'EXIT', _ , _} ->
 			ok
 		after
@@ -40,7 +40,7 @@ handle_info('timeout', #state{mcd_pid = undefined, host = Host, port = Port} = S
                               {restarting_in, ?RESTART_INTERVAL}]),
             {noreply, State, ?RESTART_INTERVAL}
    end;
-	
+
 handle_info({'EXIT', Pid, Reason}, #state{mcd_pid = Pid} = S) ->
     error_logger:error_report([{memcached_crashed, Pid},
                                {reason, Reason},
@@ -58,8 +58,6 @@ handle_info(_Info, S) ->
     end.
 handle_cast(_Cast, S) ->
     {noreply, S}.
-terminate(_Reason, _S) ->
-    ok.
-
-
-
+terminate(_Reason, #state{mcd_pid=Pid, host=Host, port=Port}) ->
+  local_pg2:leave({Host, Port}, Pid),
+  ok.
