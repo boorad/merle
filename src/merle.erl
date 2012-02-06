@@ -103,12 +103,12 @@ getkey(Ref, Key) ->
 %% @doc retrieve multiple values based on keys
 getkeys(Ref, Keys) when is_list(Keys) ->
 	StringKeys = lists:map(fun
-			(A) when is_atom(A) -> 
+			(A) when is_atom(A) ->
 				atom_to_list(A);
 			(S) ->
 				S
 			end, Keys),
-	
+
 	gen_server2:call(Ref, {getkeys,{join_by(StringKeys, " ")}}).
 
 
@@ -329,9 +329,9 @@ handle_call({cas, {Key, Flag, ExpTime, CasUniq, Value}}, _From, Socket) ->
 handle_cast(_Msg, State) -> {noreply, State}.
 
 %% @private
-handle_info({tcp_closed, Socket}, Socket) -> 
+handle_info({tcp_closed, Socket}, Socket) ->
     {stop, {error, tcp_closed}, Socket};
-handle_info({tcp_error, Socket, Reason}, Socket) -> 
+handle_info({tcp_error, Socket, Reason}, Socket) ->
     {stop, {error, {tcp_error, Reason}}, Socket};
 handle_info(_Info, State) -> {noreply, State}.
 
@@ -388,7 +388,7 @@ send_multi_get_cmd(Socket, Cmd) ->
 	    end,
     inet:setopts(Socket, ?TCP_OPTS_ACTIVE),
     Reply.
-	
+
 %% @private
 %% @doc send_gets_cmd/2 function for cas retreival commands
 send_gets_cmd(Socket, Cmd) ->
@@ -412,7 +412,7 @@ do_recv_stats() ->
             [];
         {tcp, Socket, Data} ->
   			{ok, [Field, Value], []} = io_lib:fread("STAT ~s ~s \r\n", binary_to_list(Data)),
-            inet:setopts(Socket, ?TCP_OPTS_ACTIVE),  
+            inet:setopts(Socket, ?TCP_OPTS_ACTIVE),
             [{Field, Value} | do_recv_stats()]
      after ?TIMEOUT ->
 	timeout
@@ -422,7 +422,7 @@ recv_simple_reply() ->
 	receive
 	  	{tcp, Socket, Data} ->
         	inet:setopts(Socket, ?TCP_OPTS_ACTIVE),
-        	parse_simple_response_line(Data); 
+        	parse_simple_response_line(Data);
         {error, closed} ->
   			connection_closed
     after ?TIMEOUT -> {error, timeout}
@@ -446,16 +446,16 @@ recv_complex_get_reply(Socket) ->
 	recv_complex_get_reply(Socket, []).
 recv_complex_get_reply(Socket, Accum) ->
 	case gen_tcp:recv(Socket, 0, ?TIMEOUT) of
-		{ok, <<"END\r\n">>} -> 
+		{ok, <<"END\r\n">>} ->
 			Accum;
 		{ok, Data} ->
-  			{ok,[_,Key,_,Bytes], []} = 
+  			{ok,[_,Key,_,Bytes], []} =
 				io_lib:fread("~s ~s ~u ~u\r\n", binary_to_list(Data)),
             		inet:setopts(Socket, ?TCP_OPTS_RAW),
 			case  gen_tcp:recv(Socket, Bytes+2, ?TIMEOUT) of
-				{ok, <<Value:Bytes/binary, "\r\n">>} -> 
+				{ok, <<Value:Bytes/binary, "\r\n">>} ->
 					inet:setopts(Socket, ?TCP_OPTS_LINE),
-					recv_complex_get_reply(Socket, 
+					recv_complex_get_reply(Socket,
 						[{Key, binary_to_term(Value)}|Accum]);
 				{error, Error} ->
 					{error, Error}
@@ -463,14 +463,14 @@ recv_complex_get_reply(Socket, Accum) ->
 		{error, Error} ->
 			{error, Error}
 	end.
-		
+
 
 %% @private
 %% @doc receive function for cas responses containing VALUEs
 recv_complex_gets_reply(Socket) ->
 	receive
 		%% For receiving get responses where the key does not exist
-		{tcp, Socket, <<"END\r\n">>} -> 
+		{tcp, Socket, <<"END\r\n">>} ->
         inet:setopts(Socket, ?TCP_OPTS_LINE),
         {error, not_found};
 		%% For receiving get responses containing data
@@ -501,4 +501,3 @@ join_by([A|[]], _) ->
 	[A];
 join_by([A|Rest], J) ->
 	[A, J | join_by(Rest, J)].
-
