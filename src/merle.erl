@@ -275,15 +275,15 @@ handle_call({delete, {Key, Time}}, _From, Socket) ->
     ),
     {reply, Reply, Socket};
 
-handle_call({set, {Key, Flag, ExpTime, Value}}, _From, Socket) ->
-	Bin = term_to_binary(Value),
-	Bytes = integer_to_list(size(Bin)),
+handle_call({set, {Key, Flag, ExpTime, Value}}, _From, Socket)
+  when is_binary(Value) ->
+	Bytes = integer_to_list(size(Value)),
     Reply = send_storage_cmd(
         Socket,
         iolist_to_binary([
             <<"set ">>, Key, <<" ">>, Flag, <<" ">>, ExpTime, <<" ">>, Bytes
         ]),
-        Bin
+        Value
     ),
     {reply, Reply, Socket};
 
