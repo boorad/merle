@@ -287,6 +287,10 @@ handle_call({set, {Key, Flag, ExpTime, Value}}, _From, Socket)
     ),
     {reply, Reply, Socket};
 
+handle_call({set, {_,_,_,Value}}, _From, Socket) ->
+    io:format("'~p' value must be binary for merle:set~n", [Value]),
+    {reply, not_set, Socket};
+
 handle_call({add, {Key, Flag, ExpTime, Value}}, _From, Socket) ->
 	Bin = term_to_binary(Value),
 	Bytes = integer_to_list(size(Bin)),
