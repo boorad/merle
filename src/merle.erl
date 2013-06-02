@@ -163,7 +163,7 @@ set(Ref, Key, Flag, ExpTime, Value) when is_integer(Flag) ->
 set(Ref, Key, Flag, ExpTime, Value) when is_integer(ExpTime) ->
     set(Ref, Key, Flag, integer_to_list(ExpTime), Value);
 set(Ref, Key, Flag, ExpTime, Value) ->
-	gen_server2:call(Ref, {set, {Key, Flag, ExpTime, Value}}).
+	gen_server2:cast(Ref, {set, {Key, Flag, ExpTime, Value}}).
 
 %% @doc Store a key/value pair if it doesn't already exist.
 add(Ref, Key, Value) ->
@@ -330,6 +330,17 @@ handle_call({cas, {Key, Flag, ExpTime, CasUniq, Value}}, _From, Socket) ->
     {reply, Reply, Socket}.
 
 %% @private
+handle_cast({set, {Key, Flag, ExpTime, Value}}, Socket)
+  when is_binary(Value) ->
+	Bytes = integer_to_list(size(Value)),
+    _Reply = send_storage_cmd(
+        Socket,
+        iolist_to_binary([
+            <<"set ">>, Key, <<" ">>, Flag, <<" ">>, ExpTime, <<" ">>, Bytes
+        ]),
+        Value
+    ),
+    {noreply, Socket};
 handle_cast(_Msg, State) -> {noreply, State}.
 
 %% @private
